@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartX.Core", "src\SmartX.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartX.Api", "src\SmartX.Api\SmartX.Api.csproj", "{17ED7216-00AB-4F1E-9C3F-197075DDC816}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartX.Desktop.Client", "src\SmartX.Desktop.Client\SmartX.Desktop.Client.csproj", "{E959F6C1-2624-4745-A9DA-F7C68654B806}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,18 @@ Global
 		{17ED7216-00AB-4F1E-9C3F-197075DDC816}.Release|x64.Build.0 = Release|Any CPU
 		{17ED7216-00AB-4F1E-9C3F-197075DDC816}.Release|x86.ActiveCfg = Release|Any CPU
 		{17ED7216-00AB-4F1E-9C3F-197075DDC816}.Release|x86.Build.0 = Release|Any CPU
+		{E959F6C1-2624-4745-A9DA-F7C68654B806}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E959F6C1-2624-4745-A9DA-F7C68654B806}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E959F6C1-2624-4745-A9DA-F7C68654B806}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E959F6C1-2624-4745-A9DA-F7C68654B806}.Debug|x64.Build.0 = Debug|Any CPU
+		{E959F6C1-2624-4745-A9DA-F7C68654B806}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E959F6C1-2624-4745-A9DA-F7C68654B806}.Debug|x86.Build.0 = Debug|Any CPU
+		{E959F6C1-2624-4745-A9DA-F7C68654B806}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E959F6C1-2624-4745-A9DA-F7C68654B806}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E959F6C1-2624-4745-A9DA-F7C68654B806}.Release|x64.ActiveCfg = Release|Any CPU
+		{E959F6C1-2624-4745-A9DA-F7C68654B806}.Release|x64.Build.0 = Release|Any CPU
+		{E959F6C1-2624-4745-A9DA-F7C68654B806}.Release|x86.ActiveCfg = Release|Any CPU
+		{E959F6C1-2624-4745-A9DA-F7C68654B806}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -50,5 +64,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{BA974B3F-79F6-4E13-9695-ECFBE7AE3BB6} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{17ED7216-00AB-4F1E-9C3F-197075DDC816} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{E959F6C1-2624-4745-A9DA-F7C68654B806} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 EndGlobal
