@@ -273,6 +273,78 @@ app.MapGet("/api/telemetry/stream", async (
     }
 });
 
+// here so the adding of two meters can be watched running rather than just described
+app.MapGet("/api/aggregate", (GatewayHost host, string a, string b) =>
+{
+    var (aggregate, delta, unit, detail) = host.Gateway.AggregatePair(a, b);
+    return Results.Ok(new { nodeA = a, nodeB = b, aggregate, delta, unit, detail });
+});
+
+app.MapGet("/api/frame", (GatewayHost host) =>
+{
+    var (nodes, series) = host.Gateway.RenderFrame.SnapshotFrame();
+
+    return Results.Ok(new
+    {
+        nodes,
+        series,
+        shape = new
+        {
+            rectangularCells = host.Gateway.RenderFrame.FrameCellCount,
+            nodeSlots = host.Gateway.RenderFrame.NodeSlots,
+            timeSlots = host.Gateway.RenderFrame.TimeSlots
+        }
+    });
+});
+
+app.MapPost("/api/archive/{mac}", (GatewayHost host, string mac) =>
+    host.Gateway.TryGetChannel(mac, out var channel)
+        ? Results.Ok(new { mac, promotedToList = channel.ArchiveWindow() })
+        : Results.NotFound(new { message = $"Node '{mac}' is not registered." }));
+
+app.MapGet("/api/topology", (GatewayHost host) =>
+    Results.Ok(TopologyNodeView.From(host.Gateway.Topology)));
+
+app.MapGet("/api/topology/validate", (GatewayHost host) =>
+    Results.Ok(host.Gateway.ValidateTopology()));
+
+app.MapPost("/api/topology/validate", (GatewayHost host, DeploymentNode root) =>
+    Results.Ok(host.Gateway.ValidateTopology(root)));
+
+app.MapGet("/api/topology/resolve/{mac}", (GatewayHost host, string mac) =>
+{
+    var path = host.Gateway.ResolvePath(mac);
+
+    return path is null
+        ? Results.NotFound(new { message = $"'{mac}' does not appear anywhere in the deployment tree." })
+        : Results.Ok(new { mac, path, devicesInTree = TopologyValidator.CountDevices(host.Gateway.Topology) });
+});
+
+app.MapPost("/api/simulator/toggle", (GatewayHost host) =>
+{
+    host.SimulatorEnabled = !host.SimulatorEnabled;
+    return Results.Ok(new { running = host.SimulatorEnabled });
+});
+
+app.MapPost("/api/simulator/tick", (GatewayHost host) =>
+    Results.Ok(new { accepted = host.Simulator.Tick() }));
+
+app.MapPost("/api/simulator/seed", (GatewayHost host, int environmental = 3, int power = 2, int actuators = 1) =>
+{
+    var created = host.Simulator.SeedMesh(environmental, power, actuators);
+    return Results.Ok(new { seeded = created.Count, nodes = created.Select(c => c.MacAddress) });
+});
+
+// lets a spike or a dropout be triggered by hand, which is how the detector gets demonstrated
+app.MapPost("/api/simulator/fault", (GatewayHost host, string mac, string kind) =>
+    host.Simulator.InjectFault(mac, kind)
+        ? Results.Ok(new { mac, kind, message = $"'{kind}' injected into {mac}." })
+        : Results.BadRequest(new { message = "Unknown node, or unknown fault kind (spike | disconnect | stall | clear)." }));
+
+app.MapGet("/", () => Results.Text(
+    "Smart-X Data Ingestion and Validation Gateway is running. The WPF desktop client is the front end for this build.",
+    "text/plain"));
+
 app.Run();
 
 static List<PillarStatus> Pillars() =>
