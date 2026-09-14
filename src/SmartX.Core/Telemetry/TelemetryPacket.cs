@@ -2,8 +2,6 @@ using SmartX.Core.Domain;
 
 namespace SmartX.Core.Telemetry;
 
-// one reading, kept in its own real type instead of being wrapped up as a loose object
-// a struct rather than a class, so a window of ten thousand readings is one block and not ten thousand little objects
 public readonly struct TelemetryPacket<T> :
     IEquatable<TelemetryPacket<T>>,
     IComparable<TelemetryPacket<T>>
@@ -37,10 +35,56 @@ public readonly struct TelemetryPacket<T> :
 
     public DateTimeOffset TimestampUtc { get; }
 
-    // flattens any reading to a plain number so one scoring pass can cope with every category
     public double Magnitude => TelemetryOperator<T>.ToMagnitude(Value);
 
     public bool IsEmpty => string.IsNullOrEmpty(MacAddress);
+
+    // two packets now add like numbers, so two meters on the same board read as one total
+    public static TelemetryPacket<T> operator +(TelemetryPacket<T> left, TelemetryPacket<T> right)
+        => Combine(left, right, TelemetryOperator<T>.Add, "aggregate");
+
+    public static TelemetryPacket<T> operator -(TelemetryPacket<T> left, TelemetryPacket<T> right)
+        => Combine(left, right, TelemetryOperator<T>.Subtract, "delta");
+
+    public static bool operator ==(TelemetryPacket<T> left, TelemetryPacket<T> right) => left.Equals(right);
+
+    public static bool operator !=(TelemetryPacket<T> left, TelemetryPacket<T> right) => !left.Equals(right);
+
+    // ordering is by time and not by value, because what matters here is spotting a packet that arrived late
+    public static bool operator >(TelemetryPacket<T> left, TelemetryPacket<T> right) => left.CompareTo(right) > 0;
+
+    public static bool operator <(TelemetryPacket<T> left, TelemetryPacket<T> right) => left.CompareTo(right) < 0;
+
+    public static bool operator >=(TelemetryPacket<T> left, TelemetryPacket<T> right) => left.CompareTo(right) >= 0;
+
+    public static bool operator <=(TelemetryPacket<T> left, TelemetryPacket<T> right) => left.CompareTo(right) <= 0;
+
+    // a total is only as fresh as its slowest contributor, so the later timestamp is the one that survives
+    private static TelemetryPacket<T> Combine(
+        TelemetryPacket<T> left,
+        TelemetryPacket<T> right,
+        Func<T, T, T> op,
+        string metricSuffix)
+    {
+        if (left.IsEmpty) return right;
+        if (right.IsEmpty) return left;
+
+        var metric = string.Equals(left.Metric, right.Metric, StringComparison.Ordinal)
+            ? left.Metric
+            : $"{left.Metric}+{right.Metric}";
+
+        var mac = string.Equals(left.MacAddress, right.MacAddress, StringComparison.OrdinalIgnoreCase)
+            ? left.MacAddress
+            : $"{left.MacAddress}|{right.MacAddress}";
+
+        return new TelemetryPacket<T>(
+            mac,
+            $"{metric}:{metricSuffix}",
+            op(left.Value, right.Value),
+            left.Unit,
+            Math.Max(left.Sequence, right.Sequence),
+            left.TimestampUtc >= right.TimestampUtc ? left.TimestampUtc : right.TimestampUtc);
+    }
 
     public int CompareTo(TelemetryPacket<T> other)
     {
