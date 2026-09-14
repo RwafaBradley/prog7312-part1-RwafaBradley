@@ -256,6 +256,10 @@
                     <Grid>
                         <views:OverviewView Visibility="{Binding IsOverview, Converter={StaticResource BoolToVis}}"/>
                         <views:SignalRadarView Visibility="{Binding IsSignalRadar, Converter={StaticResource BoolToVis}}"/>
+                        <views:RegisterSensorView Visibility="{Binding IsRegisterSensor, Converter={StaticResource BoolToVis}}"/>
+                        <views:TelemetryStreamView Visibility="{Binding IsTelemetryStream, Converter={StaticResource BoolToVis}}"/>
+                        <views:DeploymentTreeView Visibility="{Binding IsDeploymentTree, Converter={StaticResource BoolToVis}}"/>
+                        <views:FileAttachmentsView Visibility="{Binding IsFileAttachments, Converter={StaticResource BoolToVis}}"/>
                     </Grid>
                 </ScrollViewer>
 

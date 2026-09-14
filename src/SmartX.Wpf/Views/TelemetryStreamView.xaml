@@ -1,0 +1,174 @@
+<UserControl x:Class="SmartX.Wpf.Views.TelemetryStreamView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:SmartX.Desktop.Client.ViewModels;assembly=SmartX.Desktop.Client"
+             xmlns:tel="clr-namespace:SmartX.Core.Telemetry;assembly=SmartX.Core">
+
+    <UserControl.Resources>
+
+        <DataTemplate x:Key="TypedChip" DataType="{x:Type vm:TypedSampleViewModel}">
+            <Border Style="{StaticResource Pill}" Padding="4" Margin="0,0,12,0" CornerRadius="7">
+                <StackPanel Orientation="Horizontal">
+                    <Border CornerRadius="5" Padding="9,4" Background="{StaticResource BgSunken}">
+                        <TextBlock Text="{Binding TypeKeyword}" FontFamily="{StaticResource Mono}"
+                                   FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource Teal}"/>
+                    </Border>
+                    <TextBlock Text="{Binding CategoryName}" VerticalAlignment="Center"
+                               FontSize="12" Margin="10,0,8,0"/>
+                    <TextBlock Text="{Binding Display}" VerticalAlignment="Center" Margin="0,0,9,0"
+                               Style="{StaticResource Mono}" FontSize="12"
+                               Foreground="{StaticResource Amber}"/>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="HistoryRow" DataType="{x:Type tel:TelemetryEnvelope}">
+            <Border Padding="0,7" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="70"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource MonoDim}"
+                               Text="{Binding TimestampUtc, StringFormat={}{0:HH:mm:ss}}"/>
+                    <TextBlock Grid.Column="1" Text="{Binding Metric}" FontSize="12"
+                               Foreground="{StaticResource InkDim}"/>
+                    <TextBlock Grid.Column="2" Style="{StaticResource Mono}" TextAlignment="Right"
+                               Text="{Binding Numeric, StringFormat={}{0:F2}}"/>
+                    <TextBlock Grid.Column="3" Style="{StaticResource MonoDim}" TextAlignment="Right"
+                               Text="{Binding Unit}"/>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+    </UserControl.Resources>
+
+    <StackPanel>
+
+        <TextBlock Text="A D V A N C E D   O O P   I N   A C T I O N" Style="{StaticResource Eyebrow}"/>
+        <TextBlock Text="Typed telemetry stream" Style="{StaticResource PageTitle}"/>
+        <TextBlock Style="{StaticResource PageLead}"
+                   Text="Every payload flows through TelemetryPacket of T. One wrapper, three value types, and the reading keeps its own CLR primitive the whole way down the pipeline."/>
+
+        <!-- three live readings, three different value types, one wrapper carrying all of them -->
+        <WrapPanel Margin="0,0,0,20">
+            <ContentControl Content="{Binding FloatSample}" ContentTemplate="{StaticResource TypedChip}"/>
+            <ContentControl Content="{Binding IntSample}" ContentTemplate="{StaticResource TypedChip}"/>
+            <ContentControl Content="{Binding BoolSample}" ContentTemplate="{StaticResource TypedChip}"/>
+        </WrapPanel>
+
+        <Grid Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="360"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,16,0">
+                <StackPanel>
+                    <TextBlock Text="TelemetryPacket.cs  ·  generic wrapper" Style="{StaticResource Caption}"
+                               Margin="0,0,0,12"/>
+                    <Border Style="{StaticResource InnerCard}">
+                        <TextBlock Style="{StaticResource Code}" xml:space="preserve">public readonly struct TelemetryPacket&lt;T&gt;
+    where T : struct, IEquatable&lt;T&gt;
+{
+    public string MacAddress { get; }
+    public T Value { get; }
+    public DateTimeOffset TimestampUtc { get; }
+}</TextBlock>
+                    </Border>
+
+                    <TextBlock Text="A R R A Y S   T O   C O L L E C T I O N S"
+                               Style="{StaticResource Eyebrow}" Margin="0,20,0,6"/>
+                    <TextBlock Text="Raw batches promoted to List of T" FontSize="15" FontWeight="Bold"
+                               Margin="0,0,0,12"/>
+
+                    <Border Style="{StaticResource InnerCard}">
+                        <TextBlock Style="{StaticResource Code}" xml:space="preserve">double[][] batches = new double[32][];
+batches[0] = new double[] { 22.1, 22.4, 21.9 };
+
+double[,] frame = new double[128, 60];
+
+List&lt;TelemetryPacket&lt;double&gt;&gt; promoted =
+    matrix.PromoteToCollection(mac, metric, unit);</TextBlock>
+                    </Border>
+
+                    <DockPanel LastChildFill="False" Margin="0,14,0,0">
+                        <Button DockPanel.Dock="Left" Content="Promote staged window"
+                                Command="{Binding ArchiveWindowCommand}"/>
+                        <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center"
+                                   Style="{StaticResource Caption}" TextWrapping="Wrap" MaxWidth="330"
+                                   Text="{Binding ArchiveResultText}"/>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+
+            <StackPanel Grid.Column="1">
+
+                <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                    <StackPanel>
+                        <TextBlock Text="O P E R A T O R   O V E R L O A D" Style="{StaticResource Eyebrow}"/>
+                        <TextBlock Text="Meter aggregation" FontSize="15" FontWeight="Bold"
+                                   Margin="0,0,0,12"/>
+
+                        <Border Style="{StaticResource InnerCard}" Margin="0,0,0,14">
+                            <TextBlock Style="{StaticResource Code}" FontSize="11" xml:space="preserve">public static TelemetryPacket&lt;T&gt; operator +(
+    TelemetryPacket&lt;T&gt; a,
+    TelemetryPacket&lt;T&gt; b) =&gt;
+        Combine(a, b, Add, "aggregate");</TextBlock>
+                        </Border>
+
+                        <ComboBox ItemsSource="{Binding Sensors}" SelectedItem="{Binding NodeA, Mode=TwoWay}"
+                                  DisplayMemberPath="DisplayName" Margin="0,0,0,8"/>
+                        <ComboBox ItemsSource="{Binding Sensors}" SelectedItem="{Binding NodeB, Mode=TwoWay}"
+                                  DisplayMemberPath="DisplayName" Margin="0,0,0,14"/>
+
+                        <UniformGrid Columns="3" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="{Binding MeterADisplay}" Style="{StaticResource Mono}"
+                                           FontSize="15" Foreground="{StaticResource Teal}"/>
+                                <TextBlock Text="meter 1" Style="{StaticResource Caption}" Margin="0,3,0,0"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="{Binding MeterBDisplay}" Style="{StaticResource Mono}"
+                                           FontSize="15" Foreground="{StaticResource Teal}"/>
+                                <TextBlock Text="meter 2" Style="{StaticResource Caption}" Margin="0,3,0,0"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="{Binding MeterSumDisplay}" Style="{StaticResource Mono}"
+                                           FontSize="15" Foreground="{StaticResource Amber}"/>
+                                <TextBlock Text="aggregate" Style="{StaticResource Caption}" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </UniformGrid>
+
+                        <Button Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left"
+                                Content="Run on the gateway" Command="{Binding AggregateCommand}"/>
+
+                        <TextBlock Text="{Binding AggregateResultText}" Style="{StaticResource MonoDim}"
+                                   FontSize="11" TextWrapping="Wrap" Margin="0,12,0,0"
+                                   Visibility="{Binding AggregateResultText, Converter={StaticResource StringToVis}}"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="L A S T   A C C E P T E D" Style="{StaticResource Eyebrow}"/>
+                        <TextBlock Text="{Binding SelectedSensorDisplay}" Style="{StaticResource MonoDim}"
+                                   FontSize="10.5" TextTrimming="CharacterEllipsis" Margin="0,0,0,12"/>
+
+                        <ItemsControl ItemsSource="{Binding History}" ItemTemplate="{StaticResource HistoryRow}"
+                                      MaxHeight="240"/>
+
+                        <TextBlock Text="select a node on the radar to see its packets"
+                                   Style="{StaticResource Caption}" HorizontalAlignment="Center"
+                                   Margin="0,18"
+                                   Visibility="{Binding History.Count, Converter={StaticResource CountToVis},
+                                                        ConverterParameter=Invert}"/>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </Grid>
+    </StackPanel>
+</UserControl>
