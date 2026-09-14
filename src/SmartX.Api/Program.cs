@@ -8,6 +8,7 @@ using SmartX.Core.Topology;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<GatewayHost>();
+builder.Services.AddHostedService<MeshSimulatorService>();
 builder.Services.AddProblemDetails();
 
 builder.Services.ConfigureHttpJsonOptions(options => SmartXJson.ApplyTo(options.SerializerOptions));
@@ -238,6 +239,39 @@ app.MapGet("/api/telemetry/{mac}", (GatewayHost host, string mac, int take = 120
 // one frame on request, the same frame is about to be pushed out continuously instead
 app.MapGet("/api/heartbeat", (GatewayHost host) =>
     Results.Ok(new HeartbeatView { Snapshot = host.Gateway.Heartbeat() }));
+
+// the console is pushed a frame each tick instead of asking on a timer, so what moves on screen matches what actually arrived
+app.MapGet("/api/telemetry/stream", async (
+    GatewayHost host,
+    HttpContext context,
+    CancellationToken cancellationToken) =>
+{
+    context.Response.Headers.CacheControl = "no-cache";
+    context.Response.Headers.ContentType = "text/event-stream";
+    context.Response.Headers["X-Accel-Buffering"] = "no";
+
+    var (id, reader) = host.Broadcaster.Subscribe();
+
+    try
+    {
+        var initial = JsonSerializer.Serialize(host.Gateway.Heartbeat(), SmartXJson.Options);
+        await context.Response.WriteAsync($"event: heartbeat\ndata: {initial}\n\n", cancellationToken);
+        await context.Response.Body.FlushAsync(cancellationToken);
+
+        await foreach (var payload in reader.ReadAllAsync(cancellationToken))
+        {
+            await context.Response.WriteAsync($"event: heartbeat\ndata: {payload}\n\n", cancellationToken);
+            await context.Response.Body.FlushAsync(cancellationToken);
+        }
+    }
+    catch (OperationCanceledException)
+    {
+    }
+    finally
+    {
+        host.Broadcaster.Unsubscribe(id);
+    }
+});
 
 app.Run();
 
