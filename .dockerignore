@@ -1,0 +1,8 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/App_Data/
+src/SmartX.Wpf/
+.git/
+*.user

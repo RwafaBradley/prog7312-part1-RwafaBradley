@@ -5,6 +5,11 @@ using SmartX.Core.Domain;
 using SmartX.Core.Telemetry;
 using SmartX.Core.Topology;
 
+if (args.Contains("--healthcheck", StringComparer.OrdinalIgnoreCase))
+{
+    return await HealthProbe.RunAsync();
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<GatewayHost>();
@@ -346,6 +351,7 @@ app.MapGet("/", () => Results.Text(
     "text/plain"));
 
 app.Run();
+return 0;
 
 static List<PillarStatus> Pillars() =>
 [

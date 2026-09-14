@@ -1,0 +1,20 @@
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: smartx/gateway-desktop:part1
+    container_name: smartx-gateway-desktop
+    ports:
+      - "5240:8080"
+    environment:
+      SmartX__TickIntervalMs: "1000"
+      SmartX__Seed__Environmental: "9"
+      SmartX__Seed__Power: "5"
+      SmartX__Seed__Actuators: "4"
+    volumes:
+      - smartx-attachments:/app/App_Data
+    restart: unless-stopped
+
+volumes:
+  smartx-attachments:
