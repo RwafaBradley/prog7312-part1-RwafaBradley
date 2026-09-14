@@ -1,0 +1,95 @@
+<UserControl x:Class="SmartX.Wpf.Views.GatewayView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:SmartX.Desktop.Client.ViewModels;assembly=SmartX.Desktop.Client"
+             Background="{StaticResource Bg}">
+
+    <UserControl.Resources>
+
+        <DataTemplate x:Key="PillarCard" DataType="{x:Type vm:PillarViewModel}">
+            <Button Width="336" Height="208" Margin="0,0,18,18"
+                    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                    IsEnabled="{Binding IsEnabled}"
+                    Padding="20"
+                    Background="{StaticResource BgPanel}"
+                    BorderBrush="{StaticResource Line}"
+                    Command="{Binding DataContext.OpenPillarCommand,
+                                      RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    CommandParameter="{Binding}">
+                <DockPanel LastChildFill="True">
+
+                    <DockPanel DockPanel.Dock="Top" LastChildFill="False" Margin="0,0,0,16">
+                        <TextBlock DockPanel.Dock="Left" Text="{Binding Index}"
+                                   FontFamily="{StaticResource Mono}" FontSize="11"
+                                   Foreground="{StaticResource Amber}"/>
+                        <Border DockPanel.Dock="Right" Style="{StaticResource Pill}" Padding="8,2">
+                            <TextBlock Text="{Binding Badge}" FontFamily="{StaticResource Mono}"
+                                       FontSize="9" FontWeight="Bold">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{StaticResource InkFaint}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsEnabled}" Value="True">
+                                                <Setter Property="Foreground" Value="{StaticResource Teal}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Border>
+                    </DockPanel>
+
+                    <TextBlock DockPanel.Dock="Bottom" Text="{Binding BadgeDetail}"
+                               Style="{StaticResource Caption}" Margin="0,14,0,0"/>
+
+                    <StackPanel>
+                        <TextBlock Text="{Binding Title}" FontSize="16.5" FontWeight="Bold"
+                                   TextWrapping="Wrap" Margin="0,0,0,10"/>
+                        <TextBlock Text="{Binding Summary}" Foreground="{StaticResource InkDim}"
+                                   FontSize="12" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </DockPanel>
+            </Button>
+        </DataTemplate>
+
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="56,54,56,40" MaxWidth="1120" HorizontalAlignment="Left">
+
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,26">
+                <Path Data="M 5,0 L 10,5 L 5,10 L 0,5 Z" Fill="{StaticResource Amber}"
+                      Width="11" Height="11" Stretch="Uniform" VerticalAlignment="Center"
+                      Margin="0,0,11,0"/>
+                <TextBlock Text="S M A R T   X   G A T E W A Y" FontSize="10.5" FontWeight="SemiBold"
+                           Foreground="{StaticResource InkFaint}" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <TextBlock Text="Data Ingestion and Validation Gateway"
+                       FontSize="34" FontWeight="Bold" Margin="0,0,0,14"/>
+
+            <TextBlock MaxWidth="740" HorizontalAlignment="Left" TextWrapping="Wrap"
+                       FontSize="13.5" Foreground="{StaticResource InkDim}" Margin="0,0,0,10"
+                       Text="A hybrid IoT mesh of ESP32 nodes publishing floats, integers and booleans into one type safe ingestion pipeline. Choose a pillar to open its console."/>
+
+            <TextBlock Style="{StaticResource MonoDim}" FontSize="11" Margin="0,0,0,34"
+                       Text="{Binding ApiEndpointDisplay}"/>
+
+            <ItemsControl ItemsSource="{Binding Pillars}" ItemTemplate="{StaticResource PillarCard}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+
+            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                <Ellipse Width="7" Height="7" VerticalAlignment="Center" Margin="0,0,9,0"
+                         Fill="{Binding IsConnected, Converter={StaticResource StatusBrush},
+                                        ConverterParameter=Invert}"/>
+                <TextBlock Text="{Binding ConnectionMessage}" Style="{StaticResource MonoDim}" FontSize="10.5"/>
+            </StackPanel>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
