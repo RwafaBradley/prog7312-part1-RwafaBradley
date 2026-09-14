@@ -212,6 +212,33 @@ app.MapDelete("/api/sensors/{mac}/attachments/{id}", (GatewayHost host, string m
     return Results.NoContent();
 });
 
+// every packet returns the running accepted and rejected counts, so the screen can show the filter doing its job
+app.MapPost("/api/telemetry", (GatewayHost host, TelemetryEnvelope envelope) =>
+{
+    var result = host.Gateway.Ingest(envelope);
+    return result.Accepted ? Results.Accepted(value: result) : Results.BadRequest(result);
+});
+
+app.MapPost("/api/telemetry/batch", (GatewayHost host, List<TelemetryEnvelope> envelopes) =>
+{
+    var results = host.Gateway.IngestBatch(envelopes);
+
+    return Results.Ok(new
+    {
+        submitted = envelopes.Count,
+        accepted = results.Count(r => r.Accepted),
+        rejected = results.Count(r => !r.Accepted),
+        results
+    });
+});
+
+app.MapGet("/api/telemetry/{mac}", (GatewayHost host, string mac, int take = 120) =>
+    Results.Ok(host.Gateway.History(mac, Math.Clamp(take, 1, 512))));
+
+// one frame on request, the same frame is about to be pushed out continuously instead
+app.MapGet("/api/heartbeat", (GatewayHost host) =>
+    Results.Ok(new HeartbeatView { Snapshot = host.Gateway.Heartbeat() }));
+
 app.Run();
 
 static List<PillarStatus> Pillars() =>
