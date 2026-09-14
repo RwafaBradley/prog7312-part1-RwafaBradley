@@ -254,9 +254,8 @@
 
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="32,24,28,24">
                     <Grid>
-                        <TextBlock Text="this panel fills in as each screen is built"
-                                   Style="{StaticResource Caption}" HorizontalAlignment="Center"
-                                   Margin="0,60"/>
+                        <views:OverviewView Visibility="{Binding IsOverview, Converter={StaticResource BoolToVis}}"/>
+                        <views:SignalRadarView Visibility="{Binding IsSignalRadar, Converter={StaticResource BoolToVis}}"/>
                     </Grid>
                 </ScrollViewer>
 

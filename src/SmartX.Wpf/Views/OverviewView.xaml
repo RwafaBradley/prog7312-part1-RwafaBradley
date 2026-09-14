@@ -1,0 +1,145 @@
+<UserControl x:Class="SmartX.Wpf.Views.OverviewView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:svc="clr-namespace:SmartX.Desktop.Client.Services;assembly=SmartX.Desktop.Client">
+
+    <UserControl.Resources>
+
+        <DataTemplate x:Key="RegistrationRow" DataType="{x:Type svc:SensorView}">
+            <Border Padding="0,11" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="110"/>
+                        <ColumnDefinition Width="90"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="{Binding MacAddress}" Style="{StaticResource Mono}"
+                               FontSize="12" VerticalAlignment="Center"/>
+
+                    <TextBlock Grid.Column="1" Text="{Binding LocationPath}" FontSize="12"
+                               Foreground="{StaticResource InkDim}" VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis" Margin="12,0"/>
+
+                    <Border Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center"
+                            CornerRadius="3" Padding="8,3" Background="{StaticResource BgRaised}">
+                        <TextBlock Text="{Binding CategoryName}" FontFamily="{StaticResource Mono}"
+                                   FontSize="9" FontWeight="Bold"
+                                   Foreground="{Binding Category, Converter={StaticResource CategoryBrush}}"/>
+                    </Border>
+
+                    <TextBlock Grid.Column="3" Text="{Binding ValueKindName}" Style="{StaticResource MonoDim}"
+                               VerticalAlignment="Center"/>
+
+                    <TextBlock Grid.Column="4" Text="{Binding PacketsAccepted, StringFormat={}{0:N0}}"
+                               Style="{StaticResource MonoDim}" TextAlignment="Right"
+                               VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+    </UserControl.Resources>
+
+    <StackPanel>
+
+        <TextBlock Text="L I V E   S N A P S H O T" Style="{StaticResource Eyebrow}"/>
+        <TextBlock Text="Ingestion across the mesh" Style="{StaticResource PageTitle}"/>
+        <TextBlock Style="{StaticResource PageLead}"
+                   Text="Every figure here is read from the running gateway, not stored in the window. The simulated ESP32 fleet seeds itself on start up, so the numbers move the moment the console opens."/>
+
+        <UniformGrid Columns="4" Margin="0,0,0,22">
+
+            <Border Style="{StaticResource Card}" Margin="0,0,14,0">
+                <StackPanel>
+                    <TextBlock Text="Registered nodes" Style="{StaticResource Caption}" Margin="0,0,0,12"/>
+                    <TextBlock Text="{Binding TotalNodes}" Style="{StaticResource StatValue}"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                        <TextBlock Text="&#x25B2;" FontSize="8" Foreground="{StaticResource Teal}"
+                                   VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock Text="{Binding NodesAddedToday, StringFormat={}{0} today}"
+                                   Style="{StaticResource Caption}" Foreground="{StaticResource Teal}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Margin="0,0,14,0">
+                <StackPanel>
+                    <TextBlock Text="Packets ingested" Style="{StaticResource Caption}" Margin="0,0,0,12"/>
+                    <!-- read from the gateway rather than counted in the window, so closing the console loses nothing -->
+                    <TextBlock Text="{Binding PacketsIngestedDisplay}" Style="{StaticResource StatValue}"
+                               Foreground="{StaticResource Teal}"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                        <TextBlock Text="&#x25B2;" FontSize="8" Foreground="{StaticResource Teal}"
+                                   VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock Text="{Binding IngestRateDisplay}" Style="{StaticResource Caption}"
+                                   Foreground="{StaticResource Teal}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Margin="0,0,14,0">
+                <StackPanel>
+                    <TextBlock Text="Anomalies flagged" Style="{StaticResource Caption}" Margin="0,0,0,12"/>
+                    <TextBlock Text="{Binding AnomaliesFlagged}" Style="{StaticResource StatValue}"
+                               Foreground="{StaticResource Rose}"/>
+                    <TextBlock Text="{Binding UnresolvedAnomalies, StringFormat={}{0} unresolved}"
+                               Style="{StaticResource Caption}" Foreground="{StaticResource Rose}"
+                               Margin="0,10,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="Avg API latency" Style="{StaticResource Caption}" Margin="0,0,0,12"/>
+                    <TextBlock Text="{Binding LatencyDisplay}" Style="{StaticResource StatValue}"
+                               Foreground="{StaticResource Amber}"/>
+                    <TextBlock Text="{Binding MeshIntegrityDisplay, StringFormat={}mesh integrity {0}}"
+                               Style="{StaticResource Caption}" Margin="0,10,0,0"/>
+                </StackPanel>
+            </Border>
+
+        </UniformGrid>
+
+        <Border Style="{StaticResource Card}">
+            <StackPanel>
+                <TextBlock Text="R E C E N T   R E G I S T R A T I O N S" Style="{StaticResource Eyebrow}"/>
+                <TextBlock Text="Latest sensor records" FontSize="17" FontWeight="Bold" Margin="0,0,0,16"/>
+
+                <Grid Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="110"/>
+                        <ColumnDefinition Width="90"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="D E V I C E   I D   /   M A C" Style="{StaticResource ColumnLabel}"/>
+                    <TextBlock Grid.Column="1" Text="L O C A T I O N" Style="{StaticResource ColumnLabel}" Margin="12,0"/>
+                    <TextBlock Grid.Column="2" Text="C A T E G O R Y" Style="{StaticResource ColumnLabel}"/>
+                    <TextBlock Grid.Column="3" Text="P A Y L O A D" Style="{StaticResource ColumnLabel}"/>
+                    <TextBlock Grid.Column="4" Text="P A C K E T S" Style="{StaticResource ColumnLabel}" TextAlignment="Right"/>
+                </Grid>
+
+                <Border Height="1" Background="{StaticResource LineBright}"/>
+
+                <ItemsControl ItemsSource="{Binding RecentRegistrations}"
+                              ItemTemplate="{StaticResource RegistrationRow}"/>
+
+                <TextBlock Text="no sensors registered yet" Style="{StaticResource Caption}"
+                           HorizontalAlignment="Center" Margin="0,28"
+                           Visibility="{Binding RecentRegistrations.Count,
+                                                Converter={StaticResource CountToVis},
+                                                ConverterParameter=Invert}"/>
+
+                <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                    <Ellipse Width="6" Height="6" VerticalAlignment="Center" Margin="0,0,9,0"
+                             Fill="{StaticResource Teal}"/>
+                    <TextBlock Text="{Binding LastApiDisplay}" Style="{StaticResource MonoDim}" FontSize="10.5"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+    </StackPanel>
+</UserControl>
